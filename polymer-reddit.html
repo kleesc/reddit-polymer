@@ -8,6 +8,7 @@
 <link rel="import" href="../bower_components/core-scroll-header-panel/core-scroll-header-panel.html">
 <link rel="import" href="../bower_components/core-toolbar/core-toolbar.html">
 <link rel="import" href="../bower_components/core-menu/core-menu.html">
+<link rel="import" href="../bower_components/core-collapse/core-collapse.html">
 <link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
 
 <!-- Paper elements -->
@@ -17,31 +18,23 @@
 <link rel="import" href="../bower_components/paper-dropdown/paper-dropdown.html">
 
 <!-- subreddit-list -->
-<polymer-element name="subreddit-list" attributes="list currentSubreddit">
+<polymer-element name="subreddit-list" attributes="subreddits currentSubreddit">
   <template>
     <style>
-     paper-dropdown {
-       color: #1D1D1D;
+     :host {
+       color: white;
      }
      paper-item.core-selected {
        background-color: #8755EB;
      }
     </style>
 
-    <paper-menu-button>
-      <paper-icon-button icon="menu" noink></paper-icon-button>
-      <paper-dropdown class="dropdown">
-        <core-toolbar style="background-color: #878BEB; color: white;">
-          Subreddits
-        </core-toolbar>
-        <core-menu>
-          <paper-item>Frontpage</paper-item>
-          <template repeat="{{item in list}}">
-            <paper-item on-click="{{onClick}}">{{item.display_name}}</paper-item>
-          </template>
-        </core-menu>
-      </paper-dropdown>
-    </paper-menu-button>
+    <core-menu>
+      <paper-item>Frontpage</paper-item>
+      <template repeat="{{subreddit in subreddits}}">
+        <paper-item on-click="{{onClick}}">{{subreddit.url}}</paper-item>
+      </template>
+    </core-menu>
   </template>
   <script>
    Polymer({
@@ -50,7 +43,7 @@
      },
      onClick: function(event, detail, sender) {
        this.fire('subreddit-selected',
-                 {subreddit: event.target.templateInstance.model.item});
+                 {subreddit: event.target.templateInstance.model.subreddit});
      }
    });
   </script>
@@ -67,31 +60,34 @@
        font-family: Lato;
        color: white;
      }
-     :host(.core-selected) {
-       background-color: #8755EB;
-     }
      core-drawer-panel, core-scroll-header-panel {
        background-color: #1D1D1D;
      }
+     .title {
+      -webkit-transform-origin: 0;
+      transform-origin: 0;
+      font-size: 40px;
+    }
     </style>
 
     <core-drawer-panel responsiveWidth="900px" selected="main">
       <core-header-panel drawer>
-        <core-toolbar style="background-color: #878BEB">
-          Subreddits
+        <core-toolbar class="tall" style="background-color: #878BEB">
+          <h3 class="bottom">Reddit Polymer</h1>
         </core-toolbar>
-        <subreddit-list list="{{subreddits}}"
+        <subreddit-list subreddits="{{subreddits}}"
                         on-subreddit-selected="{{subredditSelected}}">
         </subreddit-list>
       </core-header-panel>
       <core-scroll-header-panel main condenses keepCondensedHeader >
-        <core-toolbar class="small" style="background-color: #878BEB">
-          <core-icon-button icon="menu" id="drawer_toggle"></core-icon-button>
-          <h1>Polymer Reddit</h1>
+        <core-toolbar class="tall" style="background-color: #878BEB">
+          <div class="bottom"><core-icon-button icon="menu" id="drawer_toggle"></core-icon-button></div>
         </core-toolbar>
-        <div>TEST</div>
-        <div>TEST1</div>
-        <x-foo>test4</x-foo>
+        <div class="content"">
+          <template repeat="{{post in listing}}">
+            <div class="post" style="margin: 15px 0;">{{post.title}}</div>
+          </template>
+        </div>
       </core-scroll-header-panel>
     </core-drawer-panel>
   </template>
@@ -136,6 +132,20 @@
        document.head.appendChild(frontReq);
      },
      subredditSelected: function(event, detail) {
+       redditElement = this;
+       var listingCallback = "listingcb";
+       var listingReq = document.createElement('script');
+       listingReq.src = "http://reddit.com/r/" + detail.subreddit.display_name + ".json?sort=hot&jsonp=" + listingCallback;
+
+       //JSONP
+       window[listingCallback] = function(res) {
+         redditElement.listing = res.data.children
+                                    .map(function(n) { return n.data });
+         console.log(res);
+         delete window[listingCallback];
+       };
+
+       document.head.appendChild(listingReq);
        console.log('test');
      }
    });
