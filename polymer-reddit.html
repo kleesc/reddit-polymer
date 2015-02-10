@@ -29,7 +29,7 @@
     </style>
 
     <core-menu>
-      <paper-item>Frontpage</paper-item>
+      <paper-item id="frontpage" on-Click="{{onClick}}"">Frontpage</paper-item>
       <template repeat="{{subreddit in subreddits}}">
         <paper-item on-click="{{onClick}}">{{subreddit.url}}</paper-item>
       </template>
@@ -41,8 +41,14 @@
        this.subreddits = [];
      },
      onClick: function(event, detail, sender) {
-       this.fire('subreddit-selected',
-                 {subreddit: event.target.templateInstance.model.subreddit});
+       if (event.target === this.$.frontpage) {
+         this.fire('frontpage-selected', {});
+         console.log(event.target);
+         console.log(this.$.frontpage);
+       } else {
+         this.fire('subreddit-selected',
+                   {subreddit: event.target.templateInstance.model.subreddit});
+       }
      }
    });
   </script>
@@ -101,7 +107,8 @@
           <h3 id="title" class="bottom">Reddit Polymer</h1>
         </core-toolbar>
         <subreddit-list subreddits="{{subreddits}}"
-                        on-subreddit-selected="{{subredditSelected}}">
+                        on-subreddit-selected="{{subredditSelected}}"
+                        on-frontpage-selected="{{frontpageSelected}}">
         </subreddit-list>
       </core-header-panel>
       <core-scroll-header-panel main condenses keepCondensedHeader >
@@ -133,9 +140,6 @@
        var subCallback = "subredditcb";
        var subReq = document.createElement('script');
        subReq.src = "http://reddit.com/subreddits.json?jsonp=" + subCallback;
-       var frontCallback = "frontpagecb";
-       var frontReq = document.createElement('script');
-       frontReq.src = "http://reddit.com/.json?jsonp=" + frontCallback;
 
        // JSONP callbacks
        window[subCallback] = function(res) {
@@ -144,18 +148,27 @@
          console.log(res);
          delete window[subCallback];
        };
+    
+       // Loads the scripts
+       document.head.appendChild(subReq);
+       
+       this.frontpageSelected(null, null);
+       
+     },
+     frontpageSelected: function(event, detail) {
+       var redditElement = this;
+       var frontCallback = "frontpagecb";
+       var frontReq = document.createElement('script');
+       frontReq.src = "http://reddit.com/.json?jsonp=" + frontCallback;
+
        window[frontCallback] = function(res) {
          redditElement.listing = res.data.children
                                     .map(function(n) { return n.data });
          console.log(res);
          delete window[frontCallback];
-       }
-
-       // Loads the scripts
-       document.head.appendChild(subReq);
+       };
        document.head.appendChild(frontReq);
 
-       
      },
      subredditSelected: function(event, detail) {
        redditElement = this;
