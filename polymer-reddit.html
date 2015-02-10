@@ -13,19 +13,18 @@
 
 <!-- Paper elements -->
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-dropdown/paper-dropdown.html">
 
 <!-- subreddit-list -->
-<polymer-element name="subreddit-list" attributes="subreddits currentSubreddit">
+<polymer-element name="subreddit-list" attributes="subreddits">
   <template>
     <style>
      :host {
-       color: white;
+       color: #565A5C;
      }
      paper-item.core-selected {
-       background-color: #8755EB;
+       background-color: #72B9BF;
+       color: white;
      }
     </style>
 
@@ -49,7 +48,25 @@
   </script>
 </polymer-element>
 
+
 <!-- post-list -->
+<polymer-element name="post-list" attributes="posts">
+  <template>
+    <style>
+     .post {
+       background-color: white;
+       margin: 0 auto;
+     }
+    </style>
+    <template repeat="{{post in listing}}">
+      <div class="post" style="margin: 0 auto;">{{post.title}}</div>
+    </template>
+  </template>
+  <script>
+   Polymer({});
+  </script>
+</polymer-element>
+
 
 <!-- polymer-reddit -->
 <polymer-element name="polymer-reddit">
@@ -58,51 +75,58 @@
      :host {
        display: block;
        font-family: Lato;
-       color: white;
+       color: #565A5C;
+     }
+     core-toolbar {
+       background-color: #111111;
+     }
+     core-toolbar.logo {
+       background-color: #FF5A5F;
      }
      core-drawer-panel, core-scroll-header-panel {
-       background-color: #1D1D1D;
+       background-color: #EDEFED;
      }
-     .title {
-      -webkit-transform-origin: 0;
-      transform-origin: 0;
-      font-size: 40px;
-    }
+     core-header-panel {
+       background-color: white;
+     }
+     
+     #title {
+       color: white;
+     }
     </style>
 
     <core-drawer-panel responsiveWidth="900px" selected="main">
-      <core-header-panel drawer>
-        <core-toolbar class="tall" style="background-color: #878BEB">
-          <h3 class="bottom">Reddit Polymer</h1>
+      <core-header-panel mode="seamed"" drawer>
+        <core-toolbar class="tall logo">
+          <h3 id="title" class="bottom">Reddit Polymer</h1>
         </core-toolbar>
         <subreddit-list subreddits="{{subreddits}}"
                         on-subreddit-selected="{{subredditSelected}}">
         </subreddit-list>
       </core-header-panel>
       <core-scroll-header-panel main condenses keepCondensedHeader >
-        <core-toolbar class="tall" style="background-color: #878BEB">
-          <div class="bottom"><core-icon-button icon="menu" id="drawer_toggle"></core-icon-button></div>
+        <core-toolbar class="tall">
+          <div class="bottom"><paper-icon-button icon="menu" id="drawer_toggle"></paper-icon-button></div>
         </core-toolbar>
-        <div class="content"">
+        <div class="content""> 
           <template repeat="{{post in listing}}">
-            <div class="post" style="margin: 15px 0;">{{post.title}}</div>
+            <div class="post" style="margin: 15px 0; background-color: white;">{{post.title}}</div>
           </template>
         </div>
       </core-scroll-header-panel>
     </core-drawer-panel>
   </template>
   <script>
+   /* Reddit Api
+      ==========
+      /subreddits.json : res['data']['children'][n]['data'] (Map of an actual subreddit)
+      /r/sub.json : res['data']['children'][n]['data'] (Map of an actual post)
+    */
    Polymer({
      created: function() {
        this.listing = [];
        this.subreddits = [];
-       this.currentSubreddit = ""
      },
-     /* Reddit Api
-        ==========
-        subreddits : res['data']['children'][n]['data'] (Map of an actual subreddit)
-        /r/sub.json : res['data']['children'][n]['data'] (Map of an actual post)
-      */
      ready: function() {
        // Wraps cross-domain requests for Frontpage and subreddit list in script tags
        var redditElement = this;
@@ -130,6 +154,8 @@
        // Loads the scripts
        document.head.appendChild(subReq);
        document.head.appendChild(frontReq);
+
+       
      },
      subredditSelected: function(event, detail) {
        redditElement = this;
@@ -145,6 +171,7 @@
          delete window[listingCallback];
        };
 
+       // Loads the script
        document.head.appendChild(listingReq);
        console.log('test');
      }
