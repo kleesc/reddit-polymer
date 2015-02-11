@@ -1,0 +1,251 @@
+<!-- Polymer reddit element using its JSONP api -->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<!-- Core elements -->
+<link rel="import" href="../bower_components/core-drawer-panel/core-drawer-panel.html">
+<link rel="import" href="../bower_components/core-header-panel/core-header-panel.html">
+<link rel="import" href="../bower_components/core-scroll-header-panel/core-scroll-header-panel.html">
+<link rel="import" href="../bower_components/core-toolbar/core-toolbar.html">
+<link rel="import" href="../bower_components/core-menu/core-menu.html">
+<link rel="import" href="../bower_components/core-collapse/core-collapse.html">
+<link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
+
+<!-- Paper elements -->
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-action-dialog.html">
+
+<link rel="import" href="../bower_components/mark-down/mark-down.html">
+
+<!-- subreddit-list -->
+<polymer-element name="subreddit-list" attributes="subreddits">
+  <template>
+    <style>
+     :host {
+       color: #565A5C;
+     }
+     paper-item.core-selected {
+       background-color: #72B9BF;
+       color: white;
+     }
+    </style>
+
+    <core-menu>
+      <paper-item id="frontpage" on-Click="{{onClick}}"">Frontpage</paper-item>
+      <template repeat="{{subreddit in subreddits}}">
+        <paper-item on-click="{{onClick}}">{{subreddit.url}}</paper-item>
+      </template>
+    </core-menu>
+  </template>
+  <script>
+   Polymer({
+     created: function() {
+       this.subreddits = [];
+     },
+     onClick: function(event, detail, sender) {
+       if (event.target === this.$.frontpage) {
+         this.fire('frontpage-selected', {});
+         console.log(event.target);
+         console.log(this.$.frontpage);
+       } else {
+         this.fire('subreddit-selected',
+                   {subreddit: event.target.templateInstance.model.subreddit});
+       }
+     }
+   });
+  </script>
+</polymer-element>
+
+
+<!-- post-list -->
+<!-- author, num_comments, score, url, subreddit, selftext_html -->
+<polymer-element name="post-list" attributes="posts">
+  <template>
+    <style>
+     h4 {
+       margin: 0;
+       padding: 0px;
+     }
+     .post {
+       background-color: white;
+       margin: 20px auto; 
+       padding: 10px;
+     }
+     .score {
+       float: left;
+       margin: 20px auto;
+       padding: 10px;
+       color: orange;
+     }
+     .wraps {
+       width: 90%;
+       margin: 0px auto;
+     }
+     .clearfix {
+       overflow: auto;
+     }
+    </style>
+    <template repeat="{{post in posts}}">
+      <div class="clearfix wrap">
+        <div class="score"><h4>{{post.score}}</h4></div>
+        <div on-click="{{onClick}}" class="post"><h4>{{post.title}}</h4></div>
+      </div>
+    </template>
+    <paper-dialog id="dialog">
+      <style>
+       paper-dialog {
+         color: #565A5C;
+         font-family: Lato;
+       }
+       a:link, a:visited, a:active {
+         text-decoration: none;
+         color: #72B9BF;
+       }
+      </style>
+      <p><a target="_blank" href="{{selectedPost.url}}">{{selectedPost.url}}</a></p>
+      <p>Author: {{selectedPost.author}}</p>
+      <p>Score: {{selectedPost.score}}</p>
+      <p>{{selectedPost.selftext}}</p>
+    </paper-dialog>
+  </template>
+  <script>
+   Polymer({
+     created: function() {
+       this.selectedPost = {};
+     },
+     onClick: function(event, detail, sender) {
+       this.selectedPost = event.target.templateInstance.model.post;
+       this.$.dialog.toggle();
+       console.log(event.target);
+       console.log(event.target.nextElementSibling);
+     }
+   });
+  </script>
+</polymer-element>
+
+
+<!-- polymer-reddit -->
+<polymer-element name="polymer-reddit">
+  <template>
+    <style>
+     :host {
+       display: block;
+       font-family: Lato;
+       color: #565A5C;
+     }
+     core-toolbar {
+       background-color: #111111;
+     }
+     core-toolbar.logo {
+       background-color: #FF5A5F;
+     }
+     core-scroll-header-panel {
+       background-color: #EDEFED;
+     }
+     core-header-panel {
+       background-color: white;
+     }
+     #title {
+       color: white;
+     }
+    </style>
+    <core-drawer-panel id="panel" responsiveWidth="900px" selected="main">
+      <core-header-panel mode="seamed"" drawer>
+        <core-toolbar class="tall logo">
+          <h3 id="title" class="bottom">Reddit Polymer</h1>
+        </core-toolbar>
+        <subreddit-list subreddits="{{subreddits}}"
+                        on-subreddit-selected="{{subredditSelected}}"
+                        on-frontpage-selected="{{frontpageSelected}}">
+        </subreddit-list>
+      </core-header-panel>
+      <core-scroll-header-panel main condenses keepCondensedHeader >
+        <core-toolbar class="tall">
+          <paper-icon-button class="bottom" on-click="{{toggleDrawer}}" icon="menu" id="drawer_toggle"></paper-icon-button>
+        </core-toolbar>
+        <div class="content""> 
+          <post-list posts="{{listing}}"></post-list>
+        </div>
+      </core-scroll-header-panel>
+    </core-drawer-panel>
+  </template>
+  <script>
+   /* Reddit Api
+      ==========
+      /subreddits.json : res['data']['children'][n]['data'] (Map of an actual subreddit)
+      /r/sub.json : res['data']['children'][n]['data'] (Map of an actual post)
+    */
+   Polymer({
+     created: function() {
+       this.listing = [];
+       this.subreddits = [];
+     },
+     ready: function() {
+       // Wraps cross-domain requests for Frontpage and subreddit list in script tags
+       var redditElement = this;
+       var subCallback = "subredditcb";
+       var subReq = document.createElement('script');
+       subReq.src = "http://reddit.com/subreddits.json?jsonp=" + subCallback;
+       
+       // JSONP callbacks
+       window[subCallback] = function(res) {
+         redditElement.subreddits = res.data.children
+                                       .map(function(n) { return n.data });
+         console.log(res);
+         delete window[subCallback];
+       };
+       
+       // Loads the scripts
+       document.head.appendChild(subReq);
+       
+       this.frontpageSelected(null, null);
+     },
+     frontpageSelected: function(event, detail) {
+       var redditElement = this;
+       var frontCallback = "frontpagecb";
+       var frontReq = document.createElement('script');
+       frontReq.src = "http://reddit.com/.json?jsonp=" + frontCallback;
+
+       window[frontCallback] = function(res) {
+         redditElement.listing = res.data.children
+                                    .map(function(n) { return n.data });
+         console.log(res);
+         delete window[frontCallback];
+       };
+       document.head.appendChild(frontReq);
+
+     },
+     subredditSelected: function(event, detail) {
+       redditElement = this;
+       var listingCallback = "listingcb";
+       var listingReq = document.createElement('script');
+       listingReq.src = "http://reddit.com/r/" + detail.subreddit.display_name + ".json?sort=hot&jsonp=" + listingCallback;
+
+       //JSONP
+       window[listingCallback] = function(res) {
+         redditElement.listing = res.data.children
+                                    .map(function(n) { return n.data });
+         console.log(res);
+         delete window[listingCallback];
+       };
+
+       // Loads the script
+       document.head.appendChild(listingReq);
+       console.log('test');
+     },
+     toggleDrawer: function(event, detail) {
+       console.log("button clicking");
+       console.log(this.$.panel);
+       var panel = this.$.panel;
+       if (panel.clientWidth > parseInt(panel.responsiveWidth, 10)) {
+         panel.narrow = !panel.narrow;
+       } else {
+         panel.narrow = true;
+         panel.togglePanel();
+       }
+     }
+   });
+  </script>
+</polymer-element>
