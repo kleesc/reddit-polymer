@@ -1,131 +1,5 @@
 <!-- Polymer reddit element using its JSONP api -->
 
-<<<<<<< HEAD
-<link rel="import" href="bower_components/polymer/polymer.html">
-
-<!-- Core elements -->
-<link rel="import" href="bower_components/core-drawer-panel/core-drawer-panel.html">
-<link rel="import" href="bower_components/core-header-panel/core-header-panel.html">
-<link rel="import" href="bower_components/core-scroll-header-panel/core-scroll-header-panel.html">
-<link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
-<link rel="import" href="bower_components/core-menu/core-menu.html">
-<link rel="import" href="bower_components/core-collapse/core-collapse.html">
-<link rel="import" href="bower_components/core-icon-button/core-icon-button.html">
-
-<!-- Paper elements -->
-<link rel="import" href="bower_components/paper-item/paper-item.html">
-<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="bower_components/paper-dialog/paper-action-dialog.html">
-
-<link rel="import" href="bower_components/mark-down/mark-down.html">
-
-<!-- subreddit-list -->
-<polymer-element name="subreddit-list" attributes="subreddits">
-  <template>
-    <style>
-     :host {
-       color: #565A5C;
-     }
-     paper-item.core-selected {
-       background-color: #72B9BF;
-       color: white;
-     }
-    </style>
-
-    <core-menu>
-      <paper-item id="frontpage" on-Click="{{onClick}}"">Frontpage</paper-item>
-      <template repeat="{{subreddit in subreddits}}">
-        <paper-item on-click="{{onClick}}">{{subreddit.url}}</paper-item>
-      </template>
-    </core-menu>
-  </template>
-  <script>
-   Polymer({
-     created: function() {
-       this.subreddits = [];
-     },
-     onClick: function(event, detail, sender) {
-       if (event.target === this.$.frontpage) {
-         this.fire('frontpage-selected', {});
-         console.log(event.target);
-         console.log(this.$.frontpage);
-       } else {
-         this.fire('subreddit-selected',
-                   {subreddit: event.target.templateInstance.model.subreddit});
-       }
-     }
-   });
-  </script>
-</polymer-element>
-
-
-<!-- post-list -->
-<!-- author, num_comments, score, url, subreddit, selftext_html -->
-<polymer-element name="post-list" attributes="posts">
-  <template>
-    <style>
-     h4 {
-       margin: 0;
-       padding: 0px;
-     }
-     .post {
-       background-color: white;
-       margin: 20px auto; 
-       padding: 10px;
-     }
-     .score {
-       float: left;
-       margin: 20px auto;
-       padding: 10px;
-       color: orange;
-     }
-     .wraps {
-       width: 90%;
-       margin: 0px auto;
-     }
-     .clearfix {
-       overflow: auto;
-     }
-    </style>
-    <template repeat="{{post in posts}}">
-      <div class="clearfix wrap">
-        <div class="score"><h4>{{post.score}}</h4></div>
-        <div on-click="{{onClick}}" class="post"><h4>{{post.title}}</h4></div>
-      </div>
-    </template>
-    <paper-dialog id="dialog">
-      <style>
-       paper-dialog {
-         color: #565A5C;
-         font-family: Lato;
-       }
-       a:link, a:visited, a:active {
-         text-decoration: none;
-         color: #72B9BF;
-       }
-      </style>
-      <p><a target="_blank" href="{{selectedPost.url}}">{{selectedPost.url}}</a></p>
-      <p>Author: {{selectedPost.author}}</p>
-      <p>Score: {{selectedPost.score}}</p>
-      <p>{{selectedPost.selftext}}</p>
-    </paper-dialog>
-  </template>
-  <script>
-   Polymer({
-     created: function() {
-       this.selectedPost = {};
-     },
-     onClick: function(event, detail, sender) {
-       this.selectedPost = event.target.templateInstance.model.post;
-       this.$.dialog.toggle();
-       console.log(event.target);
-       console.log(event.target.nextElementSibling);
-     }
-   });
-  </script>
-</polymer-element>
-=======
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
 <!-- Core elements -->
@@ -146,7 +20,6 @@
 <!-- Sub elements -->
 <link rel="import" href="subreddit-list.html">
 <link rel="import" href="post-list.html">
->>>>>>> master
 
 
 <!-- polymer-reddit -->
@@ -264,10 +137,7 @@
        var panel = this.$.panel;
        if (panel.clientWidth > parseInt(panel.responsiveWidth, 10)) {
          panel.narrow = !panel.narrow;
-<<<<<<< HEAD
-=======
          panel.toggleDrawer();
->>>>>>> master
        } else {
          panel.narrow = true;
          panel.togglePanel();
