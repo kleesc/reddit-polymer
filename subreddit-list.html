@@ -1,0 +1,38 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<!-- subreddit-list -->
+<polymer-element name="subreddit-list" attributes="subreddits">
+  <template>
+    <style>
+     :host {
+       color: #565A5C;
+     }
+     paper-item.core-selected {
+       background-color: #72B9BF;
+       color: white;
+     }
+    </style>
+
+    <core-menu>
+      <paper-item id="frontpage" on-Click="{{onClick}}"">Frontpage</paper-item>
+      <template repeat="{{subreddit in subreddits}}">
+        <paper-item on-click="{{onClick}}">{{subreddit.url}}</paper-item>
+      </template>
+    </core-menu>
+  </template>
+  <script>
+   Polymer({
+     created: function() {
+       this.subreddits = [];
+     },
+     onClick: function(event, detail, sender) {
+       if (event.target === this.$.frontpage) {
+         this.fire('frontpage-selected', {});
+       } else {
+         this.fire('subreddit-selected',
+                   {subreddit: event.target.templateInstance.model.subreddit});
+       }
+     }
+   });
+  </script>
+</polymer-element>
